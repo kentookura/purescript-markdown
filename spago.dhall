@@ -1,0 +1,33 @@
+{ name = "markdown"
+, dependencies =
+  [ "aff"
+  , "arrays"
+  , "bifunctors"
+  , "console"
+  , "const"
+  , "control"
+  , "datetime"
+  , "effect"
+  , "either"
+  , "enums"
+  , "foldable-traversable"
+  , "functors"
+  , "identity"
+  , "integers"
+  , "lists"
+  , "maybe"
+  , "newtype"
+  , "parsing"
+  , "partial"
+  , "precise"
+  , "prelude"
+  , "strings"
+  , "test-unit"
+  , "tuples"
+  , "unfoldable"
+  , "unicode"
+  , "validation"
+  ]
+, packages = ./packages.dhall
+, sources = [ "src/**/*.purs", "test/**/*.purs" ]
+}

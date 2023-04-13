@@ -12,7 +12,7 @@ import Control.Lazy as Lazy
 
 import Data.Array as A
 import Data.Bifunctor (lmap)
-import Data.Char.Unicode (isAlphaNum)
+import Data.CodePoint.Unicode (isAlphaNum)
 import Data.Const (Const(..))
 import Data.DateTime as DT
 import Data.Either (Either(..))
@@ -25,13 +25,15 @@ import Data.List as L
 import Data.Maybe as M
 import Data.String (joinWith, trim) as S
 import Data.String.CodeUnits (fromCharArray, singleton, toCharArray) as S
+import Data.String.CodePoints (codePointFromChar)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Data.Validation.Semigroup as V
 
-import Text.Parsing.Parser as P
-import Text.Parsing.Parser.Combinators as PC
-import Text.Parsing.Parser.String as PS
+import Parsing as P
+import Parsing.Combinators as PC
+import Parsing.String as PS
+import Parsing.String.Basic as PSB 
 
 import Text.Markdown.SlamDown.Parser.Utils as PU
 import Text.Markdown.SlamDown.Syntax as SD
@@ -159,7 +161,7 @@ inlines = L.many inline2 <* PS.eof
       Left e → P.fail e
 
   alphaNumStr ∷ P.Parser String (SD.Inline a)
-  alphaNumStr = SD.Str <$> someOf isAlphaNum
+  alphaNumStr = SD.Str <$> someOf (isAlphaNum <<< codePointFromChar)
 
   emphasis
     ∷ P.Parser String (SD.Inline a)
@@ -237,7 +239,7 @@ inlines = L.many inline2 <* PS.eof
   entity ∷ P.Parser String (SD.Inline a)
   entity = do
     _ ← PS.string "&"
-    s ← (S.fromCharArray <<< A.fromFoldable) <$> (PS.noneOf (S.toCharArray ";") `PC.many1Till` PS.string ";")
+    s ← (S.fromCharArray <<< A.fromFoldable) <$> (PSB.noneOf (S.toCharArray ";") `PC.many1Till` PS.string ";")
     pure $ SD.Entity $ "&" <> s <> ";"
 
   formField ∷ P.Parser String (Either String (SD.Inline a))
@@ -255,7 +257,7 @@ inlines = L.many inline2 <* PS.eof
       pure $ map (SD.FormField l r) fe
     where
     label =
-      someOf isAlphaNum
+      someOf (isAlphaNum <<< codePointFromChar)
       <|> (S.fromCharArray
              <<< A.fromFoldable
              <$> (PS.string "[" *> PC.manyTill PS.anyChar (PS.string "]")))
@@ -498,7 +500,7 @@ parseTextBox isPlainText eta template =
         # M.maybe (P.fail "Failed parsing natural") pure
 
     digit =
-      PS.oneOf ['0','1','2','3','4','5','6','7','8','9']
+      PSB.oneOf ['0','1','2','3','4','5','6','7','8','9']
 
     digitN = do
       ds ← digit
