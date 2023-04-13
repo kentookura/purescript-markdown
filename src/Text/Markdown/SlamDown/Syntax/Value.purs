@@ -6,14 +6,14 @@ module Text.Markdown.SlamDown.Syntax.Value
 
 import Prelude
 
-class (Eq a, Ord a) ⇐ Value a where
+class (Eq a, Ord a) <= Value a where
   stringValue
-    ∷ String
-    → a
+    :: String
+    -> a
   renderValue
-    ∷ a
-    → String
+    :: a
+    -> String
 
-instance valueString ∷ Value String where
+instance valueString :: Value String where
   stringValue = identity
   renderValue = identity

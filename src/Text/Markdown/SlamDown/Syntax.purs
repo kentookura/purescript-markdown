@@ -21,16 +21,16 @@ newtype SlamDownP a = SlamDown (L.List (SDB.Block a))
 
 type SlamDown = SlamDownP String
 
-derive instance functorSlamDownP ∷ Functor SlamDownP
+derive instance functorSlamDownP :: Functor SlamDownP
 
-instance showSlamDownP ∷ (Show a) ⇒ Show (SlamDownP a) where
+instance showSlamDownP :: (Show a) => Show (SlamDownP a) where
   show (SlamDown bs) = "(SlamDown " <> show bs <> ")"
 
-derive newtype instance eqSlamDownP ∷ Eq a ⇒ Eq (SlamDownP a)
-derive instance eq1SlamDownP ∷ Eq1 SlamDownP
+derive newtype instance eqSlamDownP :: Eq a => Eq (SlamDownP a)
+derive instance eq1SlamDownP :: Eq1 SlamDownP
 
-derive newtype instance ordSlamDownP ∷ Ord a ⇒ Ord (SlamDownP a)
-derive instance ord1SlamDownP ∷ Ord1 SlamDownP
+derive newtype instance ordSlamDownP :: Ord a => Ord (SlamDownP a)
+derive instance ord1SlamDownP :: Ord1 SlamDownP
 
-derive newtype instance semigroupSlamDownP ∷ Semigroup (SlamDownP a)
-derive newtype instance monoidSlamDownP ∷ Monoid (SlamDownP a)
+derive newtype instance semigroupSlamDownP :: Semigroup (SlamDownP a)
+derive newtype instance monoidSlamDownP :: Monoid (SlamDownP a)

@@ -24,9 +24,9 @@ data Inline a
   | Image (L.List (Inline a)) String
   | FormField String Boolean (FormField a)
 
-derive instance functorInline ∷ Functor Inline
+derive instance functorInline :: Functor Inline
 
-instance showInline ∷ (Show a) ⇒ Show (Inline a) where
+instance showInline :: (Show a) => Show (Inline a) where
   show (Str s) = "(Str " <> show s <> ")"
   show (Entity s) = "(Entity " <> show s <> ")"
   show Space = "Space"
@@ -39,18 +39,18 @@ instance showInline ∷ (Show a) ⇒ Show (Inline a) where
   show (Image is uri) = "(Image " <> show is <> " " <> show uri <> ")"
   show (FormField l r f) = "(FormField " <> show l <> " " <> show r <> " " <> show f <> ")"
 
-derive instance eqInline ∷ Eq a ⇒ Eq (Inline a)
-derive instance eq1Inline ∷ Eq1 Inline
-derive instance ordInline ∷ Ord a ⇒ Ord (Inline a)
-derive instance ord1Inline ∷ Ord1 Inline
+derive instance eqInline :: Eq a => Eq (Inline a)
+derive instance eq1Inline :: Eq1 Inline
+derive instance ordInline :: Ord a => Ord (Inline a)
+derive instance ord1Inline :: Ord1 Inline
 
 data LinkTarget
   = InlineLink String
   | ReferenceLink (M.Maybe String)
 
-derive instance eqLinkTarget ∷ Eq LinkTarget
-derive instance ordLinkTarget ∷ Ord LinkTarget
+derive instance eqLinkTarget :: Eq LinkTarget
+derive instance ordLinkTarget :: Ord LinkTarget
 
-instance showLinkTarget ∷ Show LinkTarget where
+instance showLinkTarget :: Show LinkTarget where
   show (InlineLink uri) = "(InlineLink " <> show uri <> ")"
   show (ReferenceLink tgt) = "(ReferenceLink " <> show tgt <> ")"
