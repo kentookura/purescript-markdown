@@ -3,16 +3,13 @@
 [![Latest release](http://img.shields.io/github/release/slamdata/purescript-markdown.svg)](https://github.com/slamdata/purescript-markdown/releases)
 [![Build status](https://travis-ci.org/slamdata/purescript-markdown.svg?branch=master)](https://travis-ci.org/slamdata/purescript-markdown)
 
-A Purescript library for parsing SlamData's dialect of Markdown, called *SlamDown*, which is mostly a safe, clean subset of CommonMark.
+A Purescript library for parsing SlamData's dialect of Markdown, called _SlamDown_, which is mostly a safe, clean subset of CommonMark.
 
 ## Installation
 
-```
-bower install purescript-markdown
-```
+This package is currently not hosted anywhere
 
 ## Usage
-
 
 ```purescript
 import Text.Markdown.SlamDown
@@ -38,30 +35,30 @@ Pursuit](http://pursuit.purescript.org/packages/purescript-markdown).
 
 In general, SlamDown is a subset of [CommonMark](http://spec.commonmark.org/), supporting the following features:
 
-* Leaf Blocks
-  * Horizontal rules
-  * ATX headers
-  * Setext headers
-  * Indented code blocks
-  * Fenced code blocks
-  * Linked reference definitions
-  * Paragraphs
-  * Blank line
-* Container Blocks
-  * Block quotes
-  * List items
-  * Lists
-* Inlines
-  * Backslash escapes
-  * Entities
-  * Code span
-  * Emphasis and strong emphasis
-  * Links
-  * Images
-  * Autolinks
-  * Hard line breaks
-  * Soft line breaks
-  * Strings
+- Leaf Blocks
+  - Horizontal rules
+  - ATX headers
+  - Setext headers
+  - Indented code blocks
+  - Fenced code blocks
+  - Linked reference definitions
+  - Paragraphs
+  - Blank line
+- Container Blocks
+  - Block quotes
+  - List items
+  - Lists
+- Inlines
+  - Backslash escapes
+  - Entities
+  - Code span
+  - Emphasis and strong emphasis
+  - Links
+  - Images
+  - Autolinks
+  - Hard line breaks
+  - Soft line breaks
+  - Strings
 
 Notably, HTML is not supported. Possibly, a safe subset of HTML could be added at some point in time.
 
@@ -73,8 +70,8 @@ The parser produces an ADT which describes the structure of the document.
 
 SlamDown extends CommonMark in several ways:
 
- * **Evaluated code blocks** &mdash; These code blocks are evaluated by the Markdown application and results of the evaluation are inserted into the document. This is similar to an image which is essentially an evaluated link (restricted to image links).
- * **Form Elements** &mdash; Form elements may be named, given default values, and embedded into a document. The host application decides what to do with them, if anything &mdash; beyond rendering them as forms.
+- **Evaluated code blocks** &mdash; These code blocks are evaluated by the Markdown application and results of the evaluation are inserted into the document. This is similar to an image which is essentially an evaluated link (restricted to image links).
+- **Form Elements** &mdash; Form elements may be named, given default values, and embedded into a document. The host application decides what to do with them, if anything &mdash; beyond rendering them as forms.
 
 ### Code Evaluation
 
@@ -90,8 +87,7 @@ Note that code may be delimited by any number of backticks, so long as the same 
 
     !``the `backticks` are taking over!``
 
-
-**Note**: This library does not provide any support for evaluation of code, and the code snippets are treated as completely opaque, but the documentation does define *semantics* for how these blocks interact with other elements and with the rendering of the document.
+**Note**: This library does not provide any support for evaluation of code, and the code snippets are treated as completely opaque, but the documentation does define _semantics_ for how these blocks interact with other elements and with the rendering of the document.
 
 Code evaluation is provided by the `eval` function, which takes an evaluation function, and replaces code blocks and inline code with the evaluated content. More general evaluation functions (for example, evaluating _form elements_ can be constructed using the `everywhere` function to traverse the `SlamDown` ADT).
 

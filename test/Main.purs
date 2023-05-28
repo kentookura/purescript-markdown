@@ -15,9 +15,9 @@ import Data.Maybe as M
 import Data.Newtype (un)
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Class.Console (log)
+import Effect.Class.Console (log, logShow)
 import Partial.Unsafe (unsafePartial)
-import Test.Unit (suite, it)
+import Test.Unit (suite, it, test)
 import Test.Unit.Assert (assert, equal)
 import Test.Unit.Main (runTest)
 import Text.Markdown.SlamDown.Eval as SDE
@@ -30,7 +30,11 @@ testDocument sd = do
   let
     printed = SDPR.prettyPrintMd <$> sd
     parsed = printed >>= SDP.parseMd
-  equal parsed sd
+
+  {-
+  logShow parsed
+  logShow printed
+  -}
   log
     $ "Original: \n   "
         <> show sd
@@ -38,16 +42,16 @@ testDocument sd = do
         <> show printed
         <> "\nParsed:\n   "
         <> show parsed
-
---assertEqual { expected: parsed, actual: sd }
+        <> "\n"
+  equal parsed sd
 
 failDocument :: Either String (SD.SlamDownP String) -> Aff Unit
 failDocument sd = assert "" (isLeft sd)
 
 main :: Effect Unit
 main = runTest do
-  suite "main" do
-    it "should succeed" do
+  suite "Parsing" do
+    it "should parse Paragraphs:" do
       testDocument $ SDP.parseMd "Paragraph"
       testDocument $ SDP.parseMd "Paragraph with spaces"
       testDocument $ SDP.parseMd "Paragraph with an entity: &copy;"
@@ -58,6 +62,7 @@ main = runTest do
       testDocument $ SDP.parseMd "Paragraph with _emphasis_"
       testDocument $ SDP.parseMd "Paragraph with _emphasis_ and __strong text__"
 
+    it "should handle breaks: " do
       testDocument $
         SDP.parseMd
           "Paragraph with a\n\
@@ -74,6 +79,7 @@ main = runTest do
           \\n\
           \paragraphs"
 
+    it "should parse Headers" do
       testDocument $
         SDP.parseMd
           "Header\n\
@@ -115,26 +121,8 @@ main = runTest do
           \\n\
           \Paragraph text"
 
-      testDocument $
-        SDP.parseMd
-          "Rule:\n\
-          \\n\
-          \-----"
-
-      testDocument $
-        SDP.parseMd
-          "A blockquote:\n\
-          \\n\
-          \> Here is some text\n\
-          \> inside a blockquote"
-
-      testDocument $
-        SDP.parseMd
-          "A nested blockquote:\n\
-          \\n\
-          \> Here is some text\n\
-          \> > Here is some more text"
-
+  suite "Lists" do
+    it "should handle ordered, unordered and nested lists" do
       testDocument $
         SDP.parseMd
           "An unordered list:\n\
@@ -156,6 +144,27 @@ main = runTest do
           \1. Item 1\n\
           \1. 1. Item 2\n\
           \   1. Item 3"
+
+    test "rules, blockquotes, indented code" do
+      testDocument $
+        SDP.parseMd
+          "Rule:\n\
+          \\n\
+          \-----"
+
+      testDocument $
+        SDP.parseMd
+          "A blockquote:\n\
+          \\n\
+          \> Here is some text\n\
+          \> inside a blockquote"
+
+      testDocument $
+        SDP.parseMd
+          "A nested blockquote:\n\
+          \\n\
+          \> Here is some text\n\
+          \> > Here is some more text"
 
       testDocument $
         SDP.parseMd
@@ -185,6 +194,8 @@ main = runTest do
           \main = log \"Hello World\"\n\
           \~~~"
 
+  suite "Eval" do
+    test "evaluation" do
       let
         probablyParsedCodeForEvaluation =
           SDP.parseMd
@@ -222,6 +233,8 @@ main = runTest do
                   sd
           a -> a
 
+  suite "Forms" do
+    test "" do
       testDocument $ SDP.parseMd "name = __ (Phil Freeman)"
       testDocument $ SDP.parseMd "name = __ (!`name`)"
       testDocument $ SDP.parseMd "sex* = (x) male () female () other"
