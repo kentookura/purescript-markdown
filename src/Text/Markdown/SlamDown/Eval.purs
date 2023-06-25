@@ -44,7 +44,7 @@ eval fs = everywhereM b i
 
   i :: SD.Inline a -> m (SD.Inline a)
   i (SD.Code true code) = SD.Code false <<< SD.renderValue <$> fs.code M.Nothing code
-  i (SD.FormField lbl r field) = SD.FormField lbl r <$> f lbl field
+  --i (SD.FormField lbl r field) = SD.FormField lbl r <$> f lbl field
   i other = pure $ other
 
   f :: String -> SD.FormField a -> m (SD.FormField a)
