@@ -5,16 +5,21 @@ module Text.Markdown.SlamDown.Syntax
   , module SDF
   , module SDI
   , module SDB
+  , module SDL
   ) where
 
 import Prelude
 
 import Data.Eq (class Eq1)
+import Data.Generic.Rep (class Generic)
+import Data.Argonaut.Encode (class EncodeJson)
+import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.List as L
 import Data.Ord (class Ord1)
 import Text.Markdown.SlamDown.Syntax.Block (Block(..), CodeBlockType(..), ListType(..)) as SDB
 import Text.Markdown.SlamDown.Syntax.FormField (class Value, Expr(..), FormField, FormFieldP(..), TextBox(..), TimePrecision(..), getLiteral, getUnevaluated, renderValue, stringValue, transFormField, transTextBox, traverseFormField, traverseTextBox) as SDF
 import Text.Markdown.SlamDown.Syntax.Inline (Inline(..), LinkTarget(..)) as SDI
+import Text.Markdown.SlamDown.Syntax.Link as SDL
 
 -- | `SlamDownP` is the type of SlamDown abstract syntax trees which take values in `a`.
 newtype SlamDownP a = SlamDown (L.List (SDB.Block a))
@@ -34,3 +39,6 @@ derive instance ord1SlamDownP :: Ord1 SlamDownP
 
 derive newtype instance semigroupSlamDownP :: Semigroup (SlamDownP a)
 derive newtype instance monoidSlamDownP :: Monoid (SlamDownP a)
+derive instance Generic (SlamDownP a) _
+instance EncodeJson a => EncodeJson (SlamDownP a) where
+  encodeJson md = genericEncodeJson md

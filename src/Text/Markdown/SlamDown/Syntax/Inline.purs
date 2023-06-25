@@ -1,15 +1,25 @@
 module Text.Markdown.SlamDown.Syntax.Inline
   ( Inline(..)
   , LinkTarget(..)
-  ) where
+  )
+  where
 
 import Prelude
 
 import Data.Eq (class Eq1)
+import Data.Generic.Rep (class Generic)
+import Data.Argonaut.Encode (class EncodeJson)
+import Data.Argonaut.Encode.Generic (genericEncodeJson)
+import Data.Argonaut.Decode.Generic (genericDecodeJson)
 import Data.List as L
 import Data.Maybe as M
 import Data.Ord (class Ord1)
 import Text.Markdown.SlamDown.Syntax.FormField (FormField)
+import Text.Markdown.SlamDown.Syntax.Link
+import Yoga.JSON as JSON
+import Yoga.JSON (class WriteForeign)
+import Yoga.JSON.Generics 
+import Yoga.JSON.Generics.EnumSumRep as Enum
 
 data Inline a
   = Str String
@@ -22,7 +32,8 @@ data Inline a
   | Code Boolean String
   | Link (L.List (Inline a)) LinkTarget
   | Image (L.List (Inline a)) String
-  | FormField String Boolean (FormField a)
+--  | FormField String Boolean (FormField a)
+  | Inline String
 
 derive instance functorInline :: Functor Inline
 
@@ -37,20 +48,28 @@ instance showInline :: (Show a) => Show (Inline a) where
   show (Code e s) = "(Code " <> show e <> " " <> show s <> ")"
   show (Link is tgt) = "(Link " <> show is <> " " <> show tgt <> ")"
   show (Image is uri) = "(Image " <> show is <> " " <> show uri <> ")"
-  show (FormField l r f) = "(FormField " <> show l <> " " <> show r <> " " <> show f <> ")"
+  -- show (FormField l r f) = "(FormField " <> show l <> " " <> show r <> " " <> show f <> ")"
+  show (Inline s) = "(Math " <> s <> ")"
 
 derive instance eqInline :: Eq a => Eq (Inline a)
 derive instance eq1Inline :: Eq1 Inline
 derive instance ordInline :: Ord a => Ord (Inline a)
 derive instance ord1Inline :: Ord1 Inline
+derive instance Generic (Inline a) _
+
+instance EncodeJson a => EncodeJson (Inline a) where
+  encodeJson inline = genericEncodeJson inline
 
 data LinkTarget
   = InlineLink String
-  | ReferenceLink (M.Maybe String)
+  | ReferenceLink Hash (M.Maybe FQN)
 
 derive instance eqLinkTarget :: Eq LinkTarget
 derive instance ordLinkTarget :: Ord LinkTarget
+derive instance genericLinkTarget :: Generic LinkTarget _
+instance encodeJsonLinkTarget:: EncodeJson LinkTarget where
+  encodeJson lt = genericEncodeJson lt
 
 instance showLinkTarget :: Show LinkTarget where
   show (InlineLink uri) = "(InlineLink " <> show uri <> ")"
-  show (ReferenceLink tgt) = "(ReferenceLink " <> show tgt <> ")"
+  show (ReferenceLink tgt fqn) = "(ReferenceLink " <> show tgt <> ")"

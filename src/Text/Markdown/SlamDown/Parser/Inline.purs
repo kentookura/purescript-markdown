@@ -1,6 +1,5 @@
 module Text.Markdown.SlamDown.Parser.Inline
   ( parseInlines
-  , validateFormField
   , validateInline
   , parseTextBox
   ) where
@@ -100,17 +99,17 @@ type TextParserKit =
   , numericPrefix :: P.Parser String Unit
   }
 
-validateFormField
-  :: forall a
-   . SD.FormField a
-  -> V.V (Array String) (SD.FormField a)
-validateFormField field =
-  case field of
-    SD.CheckBoxes (SD.Literal _) (SD.Unevaluated _) ->
-      V.invalid [ "Checkbox values & selection must be both literals or both unevaluated expressions" ]
-    SD.CheckBoxes (SD.Unevaluated _) (SD.Literal _) ->
-      V.invalid [ "Checkbox values & selection must be both literals or both unevaluated expressions" ]
-    _ -> pure field
+--validateFormField
+--  :: forall a
+--   . SD.FormField a
+--  -> V.V (Array String) (SD.FormField a)
+--validateFormField field =
+--  case field of
+--    SD.CheckBoxes (SD.Literal _) (SD.Unevaluated _) ->
+--      V.invalid [ "Checkbox values & selection must be both literals or both unevaluated expressions" ]
+--    SD.CheckBoxes (SD.Unevaluated _) (SD.Literal _) ->
+--      V.invalid [ "Checkbox values & selection must be both literals or both unevaluated expressions" ]
+--    _ -> pure field
 
 validateInline
   :: forall a
@@ -122,7 +121,7 @@ validateInline inl =
     SD.Strong inls -> SD.Strong <$> traverse validateInline inls
     SD.Link inls targ -> SD.Link <$> traverse validateInline inls <*> pure targ
     SD.Image inls str -> SD.Image <$> traverse validateInline inls <*> pure str
-    SD.FormField str b ff -> SD.FormField str b <$> validateFormField ff
+    --SD.FormField str b ff -> SD.FormField str b <$> validateFormField ff
     _ -> pure inl
 
 inlines
@@ -142,6 +141,7 @@ inlines = L.many inline2 <* PS.eof
         <|> code
         <|> autolink
         <|> entity
+        <|> inlineMath
 
   inline1 :: P.Parser String (SD.Inline a)
   inline1 =
@@ -151,8 +151,8 @@ inlines = L.many inline2 <* PS.eof
   inline2 :: P.Parser String (SD.Inline a)
   inline2 = do
     res <-
-      PC.try formField
-        <|> PC.try (Right <$> inline1)
+      --PC.try formField
+      PC.try (Right <$> inline1)
         <|> PC.try (Right <$> image)
         <|> (Right <$> other)
     case res of
@@ -199,6 +199,11 @@ inlines = L.many inline2 <* PS.eof
     contents <- (S.fromCharArray <<< A.fromFoldable) <$> PC.manyTill PS.anyChar (PS.string ticks)
     pure <<< SD.Code eval <<< S.trim $ contents
 
+  inlineMath :: P.Parser String (SD.Inline a)
+  inlineMath = SD.Inline <<< S.fromCharArray <<< A.fromFoldable <$> (PS.string "$" *> PC.manyTill PS.anyChar (PS.string "$"))
+
+
+
   link :: P.Parser String (SD.Inline a)
   link = SD.Link <$> linkLabel <*> linkTarget
     where
@@ -212,7 +217,7 @@ inlines = L.many inline2 <* PS.eof
     inlineLink = SD.InlineLink <<< S.fromCharArray <<< A.fromFoldable <$> (PS.string "(" *> PC.manyTill PS.anyChar (PS.string ")"))
 
     referenceLink :: P.Parser String SD.LinkTarget
-    referenceLink = SD.ReferenceLink <$> PC.optionMaybe ((S.fromCharArray <<< A.fromFoldable) <$> (PS.string "[" *> PC.manyTill PS.anyChar (PS.string "]")))
+    referenceLink = (\h -> SD.ReferenceLink h M.Nothing) <$> SD.Hash <$> ((S.fromCharArray <<< A.fromFoldable) <$> (PS.string "[" *> PC.manyTill PS.anyChar (PS.string "]"))) -- Todo: Syntax for name of linked entity
 
   image :: P.Parser String (SD.Inline a)
   image = SD.Image <$> imageLabel <*> imageUrl
@@ -240,29 +245,29 @@ inlines = L.many inline2 <* PS.eof
     s <- (S.fromCharArray <<< A.fromFoldable) <$> (PSB.noneOf (S.toCharArray ";") `PC.many1Till` PS.string ";")
     pure $ SD.Entity $ "&" <> s <> ";"
 
-  formField :: P.Parser String (Either String (SD.Inline a))
-  formField =
-    do
-      l <- label
-      r <- do
-        PU.skipSpaces
-        required
-      fe <- do
-        PU.skipSpaces
-        _ <- PS.string "="
-        PU.skipSpaces
-        formElement
-      pure $ map (SD.FormField l r) fe
-    where
-    label =
-      someOf (isAlphaNum <<< codePointFromChar)
-        <|>
-          ( S.fromCharArray
-              <<< A.fromFoldable
-              <$> (PS.string "[" *> PC.manyTill PS.anyChar (PS.string "]"))
-          )
+  --formField :: P.Parser String (Either String (SD.Inline a))
+  --formField =
+  --  do
+  --    l <- label
+  --    r <- do
+  --      PU.skipSpaces
+  --      required
+  --    fe <- do
+  --      PU.skipSpaces
+  --      _ <- PS.string "="
+  --      PU.skipSpaces
+  --      formElement
+  --    pure $ map (SD.FormField l r) fe
+  --  where
+  --  label =
+  --    someOf (isAlphaNum <<< codePointFromChar)
+  --      <|>
+  --        ( S.fromCharArray
+  --            <<< A.fromFoldable
+  --            <$> (PS.string "[" *> PC.manyTill PS.anyChar (PS.string "]"))
+  --        )
 
-    required = PC.option false (PS.string "*" *> pure true)
+  --  required = PC.option false (PS.string "*" *> pure true)
 
   formElement :: P.Parser String (Either String (SD.FormField a))
   formElement =

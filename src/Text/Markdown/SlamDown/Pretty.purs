@@ -98,18 +98,19 @@ prettyPrintInline il =
         bang <> "`" <> s <> "`"
     SD.Link is tgt -> "[" <> prettyPrintInlines is <> "]" <> printTarget tgt
     SD.Image is url -> "![" <> prettyPrintInlines is <> "](" <> url <> ")"
-    SD.FormField l r e ->
-      let
-        star = if r then "*" else " "
-      in
-        esc l <> star <> " = " <> prettyPrintFormElement e
+    --SD.FormField l r e ->
+    --  let
+    --    star = if r then "*" else " "
+    --  in
+    --    esc l <> star <> " = " <> prettyPrintFormElement e
+    SD.Inline s -> "$" <> s <> "$"
   where
 
   esc s = M.maybe s (const $ "[" <> s <> "]") $ S.indexOf (S.Pattern " ") s
 
   printTarget :: SD.LinkTarget -> String
   printTarget (SD.InlineLink url) = parens url
-  printTarget (SD.ReferenceLink tgt) = squares (M.fromMaybe "" tgt)
+  printTarget (SD.ReferenceLink (SD.Hash hash) fqn) = squares (hash)
 
 prettyPrintTextBoxValue :: SD.TextBox Identity -> String
 prettyPrintTextBoxValue t =
@@ -180,28 +181,28 @@ prettyPrintTextBox t =
       SD.Time prec def -> prettyPrintExpr identity (prettyPrintTime prec) def
       SD.DateTime prec def -> prettyPrintExpr identity (prettyPrintDateTime prec) def
 
-prettyPrintFormElement :: forall a. (SD.Value a) => SD.FormField a -> String
-prettyPrintFormElement el =
-  case el of
-    SD.TextBox tb -> prettyPrintTextBox tb
-    SD.RadioButtons (SD.Literal sel) (SD.Literal ls) ->
-      let
-        radioButton l = (if l == sel then "(x) " else "() ") <> SD.renderValue l
-      in
-        S.joinWith " " $ A.fromFoldable (map radioButton ls)
-    SD.RadioButtons (SD.Unevaluated bs) (SD.Unevaluated ls) ->
-      "(!`" <> bs <> "`) !`" <> ls <> "`"
-    SD.CheckBoxes (SD.Literal sel) (SD.Literal ls) ->
-      let
-        checkBox l = (if elem l sel then "[x] " else "[] ") <> SD.renderValue l
-      in
-        S.joinWith " " <<< A.fromFoldable $ checkBox <$> ls
-    SD.CheckBoxes (SD.Unevaluated bs) (SD.Unevaluated ls) ->
-      "[!`" <> bs <> "`] !`" <> ls <> "`"
-    SD.DropDown sel lbls ->
-      braces (prettyPrintExpr identity (A.fromFoldable >>> map SD.renderValue >>> S.joinWith ", ") lbls)
-        <> M.maybe "" (parens <<< prettyPrintExpr identity SD.renderValue) sel
-    _ -> "Unsupported form element"
+--prettyPrintFormElement :: forall a. (SD.Value a) => SD.FormField a -> String
+--prettyPrintFormElement el =
+--  case el of
+--    SD.TextBox tb -> prettyPrintTextBox tb
+--    SD.RadioButtons (SD.Literal sel) (SD.Literal ls) ->
+--      let
+--        radioButton l = (if l == sel then "(x) " else "() ") <> SD.renderValue l
+--      in
+--        S.joinWith " " $ A.fromFoldable (map radioButton ls)
+--    SD.RadioButtons (SD.Unevaluated bs) (SD.Unevaluated ls) ->
+--      "(!`" <> bs <> "`) !`" <> ls <> "`"
+--    SD.CheckBoxes (SD.Literal sel) (SD.Literal ls) ->
+--      let
+--        checkBox l = (if elem l sel then "[x] " else "[] ") <> SD.renderValue l
+--      in
+--        S.joinWith " " <<< A.fromFoldable $ checkBox <$> ls
+--    SD.CheckBoxes (SD.Unevaluated bs) (SD.Unevaluated ls) ->
+--      "[!`" <> bs <> "`] !`" <> ls <> "`"
+--    SD.DropDown sel lbls ->
+--      braces (prettyPrintExpr identity (A.fromFoldable >>> map SD.renderValue >>> S.joinWith ", ") lbls)
+--        <> M.maybe "" (parens <<< prettyPrintExpr identity SD.renderValue) sel
+--    _ -> "Unsupported form element"
 
 prettyPrintExpr :: forall a. (String -> String) -> (a -> String) -> SD.Expr a -> String
 prettyPrintExpr _ f (SD.Literal a) = f a
